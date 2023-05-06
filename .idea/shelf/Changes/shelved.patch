@@ -1,0 +1,199 @@
+Index: main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># This is a sample Python script.\r\n\r\n# Press Shift+F10 to execute it or replace it with your code.\r\n# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.\r\n\r\n\r\ndef print_hi(name):\r\n    # Use a breakpoint in the code line below to debug your script.\r\n    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.\r\n\r\n\r\n# Press the green button in the gutter to run the script.\r\nif __name__ == '__main__':\r\n    print_hi('PyCharm')\r\n\r\n# See PyCharm help at https://www.jetbrains.com/help/pycharm/\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main.py b/main.py
+--- a/main.py	(revision 2304f8724807f62fb2112b6db8f772b237106e32)
++++ b/main.py	(date 1683318862987)
+@@ -1,16 +1,177 @@
+-# This is a sample Python script.
++import pathlib
++import typing as tp
++
++grid = [
++    ["5", "3", ".", ".", "7", ".", ".", ".", "."],
++    ["6", ".", ".", "1", "9", "5", ".", ".", "."],
++    [".", "9", "8", ".", ".", ".", ".", "6", "."],
++    ["8", ".", ".", ".", "6", ".", ".", ".", "3"],
++    ["4", ".", ".", "8", ".", "3", ".", ".", "1"],
++    ["7", ".", ".", ".", "2", ".", ".", ".", "6"],
++    [".", "6", ".", ".", ".", ".", "2", "8", "."],
++    [".", ".", ".", "4", "1", "9", ".", ".", "5"],
++    [".", ".", ".", ".", "8", ".", ".", "7", "9"],
++]
++def get_row(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str]:
++    """Возвращает все значения для номера строки, указанной в pos
+ 
+-# Press Shift+F10 to execute it or replace it with your code.
+-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
++    >>> get_row([['1', '2', '.'], ['4', '5', '6'], ['7', '8', '9']], (0, 0))
++    ['1', '2', '.']
++    >>> get_row([['1', '2', '3'], ['4', '.', '6'], ['7', '8', '9']], (1, 0))
++    ['4', '.', '6']
++    >>> get_row([['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']], (2, 0))
++    ['.', '8', '9']
++    """
++    #print(f'TYPE OF GRID {type(pos)}')
++    # if type(pos)
++    return grid[pos[0]]
+ 
+ 
+-def print_hi(name):
+-    # Use a breakpoint in the code line below to debug your script.
+-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
++def get_col(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str]:
++    """Возвращает все значения для номера столбца, указанного в pos
+ 
++    >>> get_col([['1', '2', '.'], ['4', '5', '6'], ['7', '8', '9']], (0, 0))
++    ['1', '4', '7']
++    >>> get_col([['1', '2', '3'], ['4', '.', '6'], ['7', '8', '9']], (0, 1))
++    ['2', '.', '8']
++    >>> get_col([['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']], (0, 2))
++    ['3', '6', '9']
++    """
++    answer = []
++    for i in range(len(grid)):
++        answer.append(grid[i][pos[1]])
++    return answer
+ 
+-# Press the green button in the gutter to run the script.
+-if __name__ == '__main__':
+-    print_hi('PyCharm')
++def get_block(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str]:
++    """Возвращает все значения из квадрата, в который попадает позиция pos
+ 
+-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
++    # >>> grid = read_sudoku('puzzle1.txt')
++    # >>> get_block(grid, (0, 1))
++    # ['5', '3', '.', '6', '.', '.', '.', '9', '8']
++    # >>> get_block(grid, (4, 7))
++    # ['.', '.', '3', '.', '.', '1', '.', '.', '6']
++    # >>> get_block(grid, (8, 8))
++    ['2', '8', '.', '.', '.', '5', '.', '7', '9']
++    """
++    if pos[0] < 3:
++        if pos[1] < 3:
++            return grid[0][:3] + grid[1][:3] + grid[2][:3]
++        elif pos[1] > 2 and pos[1] < 6:
++            return grid[0][3:6] + grid[1][3:6] + grid[2][3:6]
++        else:
++            return grid[0][6:] + grid[1][6:] + grid[2][6:]
++    elif pos[0] > 2 and pos[0] < 6:
++        if pos[1] < 3:
++            return grid[3][:3] + grid[4][:3] + grid[5][:3]
++        elif pos[1] > 2 and pos[1] < 6:
++            return grid[3][3:6] + grid[4][3:6] + grid[5][3:6]
++        else:
++            return grid[3][6:] + grid[4][6:] + grid[5][6:]
++    else:
++        if pos[1] < 3:
++            return grid[6][:3] + grid[7][:3] + grid[8][:3]
++        elif pos[1] > 2 and pos[1] < 6:
++            return grid[6][3:6] + grid[7][3:6] + grid[8][3:6]
++        else:
++            return grid[6][6:] + grid[7][6:] + grid[8][6:]
++
++def find_empty_positions(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.Tuple[int, int]]:
++    """Найти первую свободную позицию в пазле
++
++    >>> find_empty_positions([['1', '2', '.'], ['4', '5', '6'], ['7', '8', '9']])
++    (0, 2)
++    >>> find_empty_positions([['1', '2', '3'], ['4', '.', '6'], ['7', '8', '9']])
++    (1, 1)
++    >>> find_empty_positions([['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']])
++    (2, 0)
++    """
++    for i in range(len(grid)):
++        for j in range(len(grid[i])):
++            if grid[i][j] == '.':
++                return i, j
++
++def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.Set[str]:
++    """Вернуть множество возможных значения для указанной позиции
++
++    # >>> grid = read_sudoku('puzzle1.txt')
++    # >>> values = find_possible_values(grid, (0,2))
++    # >>> values == {'1', '2', '4'}
++    # True
++    # >>> values = find_possible_values(grid, (4,7))
++    # >>> values == {'2', '5', '9'}
++    True
++    """
++    sudoku_values = {'1', '2', '3', '4', '5', '6', '7', '8', '9'}
++    print(f'Type of {type(pos)}')
++    print(f'Перед known values {get_row(grid, pos)}')
++    known_values = set(get_row(grid, pos) + get_col(grid, pos) + get_block(grid, pos))
++    # print(f'Type of {type(get_row(grid, pos))}')
++    possible_values = sudoku_values.difference(known_values)
++    return possible_values
++
++# print(find_empty_positions(grid))
++# empty_position = find_empty_positions(grid)
++# print(find_possible_values(grid, empty_position))
++
++empty_position = []
++def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
++    """ Решение пазла, заданного в grid """
++    """ Как решать Судоку?
++        1. Найти свободную позицию
++        2. Найти все возможные значения, которые могут находиться на этой позиции
++        3. Для каждого возможного значения:
++            3.1. Поместить это значение на эту позицию
++            3.2. Продолжить решать оставшуюся часть пазла
++
++    >>> grid = read_sudoku('puzzle1.txt')
++    >>> solve(grid)
++    [['5', '3', '4', '6', '7', '8', '9', '1', '2'], ['6', '7', '2', '1', '9', '5', '3', '4', '8'], ['1', '9', '8', '3', '4', '2', '5', '6', '7'], ['8', '5', '9', '7', '6', '1', '4', '2', '3'], ['4', '2', '6', '8', '5', '3', '7', '9', '1'], ['7', '1', '3', '9', '2', '4', '8', '5', '6'], ['9', '6', '1', '5', '3', '7', '2', '8', '4'], ['2', '8', '7', '4', '1', '9', '6', '3', '5'], ['3', '4', '5', '2', '8', '6', '1', '7', '9']]
++    """
++    # if find_empty_positions(grid) == None:
++    #     print("Вошли в конечный if==========+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
++    #     return grid
++    # else:
++    # if find_empty_positions(grid) != None:
++    #     empty_position.append(find_empty_positions(grid))
++    #     suitable_values = find_possible_values(grid, empty_position[-1])
++    #     # if len(find_possible_values(grid, empty_position[-1])) == 0:
++    #     #     grid[empty_position[-1][0]][empty_position[-1][1]] = '.'
++    #     print(f'before cycle {suitable_values}, {find_empty_positions(grid)}')
++    #     print(f'позиция {empty_position[-1]}')
++    #     for i in suitable_values:
++    #         print(i, suitable_values)
++    #         grid[empty_position[-1][0]][empty_position[-1][1]] = i
++    #         print(grid)
++    #         solve(grid)
++    #         #print(f'вывод, если if len(suitable_values) != 0 {i, suitable_values}')
++    #         #print(f'место, которое должно стать точкой {grid[empty_position[-2][0]][empty_position[-2][1]]}')
++    #         #print(f'пришли к месту где предположения стали неверными {empty_position[-1]}')
++    #         if find_empty_positions(grid) != None:
++    #             grid[empty_position[-1][0]][empty_position[-1][1]] = '.'
++    #             empty_position.pop()
++    #             #print(f'Не должно быть none {suitable_values}')
++    #             #grid[empty_position[0]][empty_position[1]] = '.'
++    if find_empty_positions(grid) != None:
++        empty_position = find_empty_positions(grid)
++        suitable_values = find_possible_values(grid, empty_position)
++        # if len(find_possible_values(grid, empty_position[-1])) == 0:
++        #     grid[empty_position[-1][0]][empty_position[-1][1]] = '.'
++        print(f'before cycle {suitable_values}, {find_empty_positions(grid)}')
++        print(f'свободная позиция {empty_position}')
++        for i in suitable_values:
++            print(i, suitable_values)
++            if find_empty_positions(grid) != None:
++                grid[empty_position[0]][empty_position[1]] = i
++                print(grid)
++                solve(grid)
++            #print(f'вывод, если if len(suitable_values) != 0 {i, suitable_values}')
++            #print(f'место, которое должно стать точкой {grid[empty_position[-2][0]][empty_position[-2][1]]}')
++            #print(f'пришли к месту где предположения стали неверными {empty_position[-1]}')
++            if find_empty_positions(grid) != None:
++                grid[empty_position[0]][empty_position[1]] = '.'
++                empty_position = find_empty_positions(grid)
++                #print(f'Не должно быть none {suitable_values}')
++                #grid[empty_position[0]][empty_position[1]] = '.'
++    return grid
++
++print(solve(grid))
+\ No newline at end of file
